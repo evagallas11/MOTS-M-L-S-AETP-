@@ -49,6 +49,7 @@ function addCell(cell){
     if(!currentSelection.includes(cell)){
         currentSelection.push(cell);
         cell.classList.add('selected');
+        checkPartialSelection();
     }
 }
 
@@ -63,21 +64,19 @@ function startSelection(e){
 function moveSelection(e){
     e.preventDefault();
     if(!isSelecting) return;
-    const cell = e.target.closest('.cell');
+    const touch = e.touches ? e.touches[0] : e;
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    const cell = element.closest('.cell');
     if(cell) addCell(cell);
 }
 
 function endSelection(e){
     e.preventDefault();
-    if(currentSelection.length > 0){
-        checkSelection();
-        currentSelection.forEach(c => c.classList.remove('selected'));
-        currentSelection = [];
-    }
+    currentSelection = [];
     isSelecting = false;
 }
 
-function checkSelection(){
+function checkPartialSelection(){
     const selectedWord = currentSelection.map(c=>c.textContent).join('');
     const reversed = selectedWord.split('').reverse().join('');
     for(const w of WORDS){
@@ -86,6 +85,7 @@ function checkSelection(){
             currentSelection.forEach(c => c.classList.add('found'));
             document.getElementById('word-'+normalize(w)).classList.add('found');
             foundWords.push(w);
+            currentSelection = [];
             if(foundWords.length === WORDS.length) endGame();
             break;
         }
